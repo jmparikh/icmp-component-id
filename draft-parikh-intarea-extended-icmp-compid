@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="rfc7991bis.rnc"?>
+
+<!DOCTYPE rfc [
+  <!ENTITY nbsp    "&#160;">
+  <!ENTITY zwsp   "&#8203;">
+  <!ENTITY nbhy   "&#8209;">
+  <!ENTITY wj     "&#8288;">
+  <!ENTITY RFC.0792 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.0792.xml">
+  <!ENTITY RFC.2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+  <!ENTITY RFC.4443 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4443.xml">
+  <!ENTITY RFC.8174 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8174.xml">
+  <!ENTITY I-D.ietf-intarea-extended-icmp-nodeid SYSTEM "https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.draft-ietf-intarea-extended-icmp-nodeid-00.xml">
+  <!ENTITY I-D.pignataro-green-enviro-icmp SYSTEM "https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.draft-pignataro-green-enviro-icmp-00.xml">
+]>
+<!-- If further character entities are required then they should be added to the DOCTYPE above.
+     Use of an external entity file is not recommended. -->
+
+<rfc
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  category="exp"
+  docName="draft-parikh-intarea-extended-icmp-compid-00"
+  ipr="trust200902"
+  obsoletes=""
+  updates=""
+  submissionType="IETF"
+  xml:lang="en"
+  version="3">
+<!-- [REPLACE] 
+       * docName with name of your draft
+     [CHECK] 
+       * category should be one of std, bcp, info, exp, historic
+       * ipr should be one of trust200902, noModificationTrust200902, noDerivativesTrust200902, pre5378Trust200902
+       * updates can be an RFC number as NNNN
+       * obsoletes can be an RFC number as NNNN 
+-->
+
+  <front>
+    <title abbrev="Abbreviated Title">Extending ICMP for Component Identification</title>
+    <!--  [REPLACE/DELETE] abbrev. The abbreviated title is required if the full title is longer than 39 characters -->
+
+    <seriesInfo name="Internet-Draft" value="draft-parikh-intarea-extended-icmp-compid-00"/>
+   
+    <author fullname="Jainam Parikh" initials="J." role="editor" surname="Parikh">
+      <!-- [CHECK]
+             * initials should not include an initial for the surname
+             * role="editor" is optional -->
+    <!-- Can have more than one author -->
+      
+    <!-- all of the following elements are optional -->
+      <organization>Arista Networks</organization>
+      <address>
+        <postal>
+          <!-- Reorder these if your country does things differently -->
+          <street>5453 Great America Parkway</street>
+          <city>Santa Clara</city>
+          <!-- <region>Sant</region> -->
+          <code>95035</code>
+          <country>US</country>
+        </postal>
+        <email>jainam@parikhgroup.net</email>
+      </address>
+    </author>
+   
+    <date />
+    <!-- On draft subbmission:
+         * If only the current year is specified, the current day and month will be used.
+         * If the month and year are both specified and are the current ones, the current day will
+           be used
+         * If the year is not the current one, it is necessary to specify at least a month and day="1" will be used.
+    -->
+
+    <area>General</area>
+    <workgroup>Internet Engineering Task Force</workgroup>
+    <!-- "Internet Engineering Task Force" is fine for individual submissions.  If this element is 
+          not present, the default is "Network Working Group", which is used by the RFC Editor as 
+          a nod to the history of the RFC Series. -->
+
+    <keyword>keyword</keyword>
+    <!-- [REPLACE/DELETE]. Multiple allowed.  Keywords are incorporated into HTML output files for 
+         use by search engines. -->
+
+    <abstract>
+      <t>
+        <xref target="I-D.ietf-intarea-extended-icmp-nodeid" /> describes a 
+        mechanism for Extending ICMP for Node Identification, which allows 
+        providing a unique IP address and/or a textual name for the node, 
+        in the case where each node may not have a unique IP address.
+      </t>
+      <t>
+        This document introduces a similar ICMP extension for Component
+        Identification.  It gives us an option to send locally defined component
+        details (like interfaces, fans, PSUs, etc.) or YANG/NETCONF defined 
+        components in the ICMP message. The true potential of this extension 
+        object is when it is used along side other extension objects which 
+        might want to send compontent based data (like in the component 
+        based Sub-Objects defined in <xref target="I-D.pignataro-green-enviro-icmp" />)
+      </t>
+      <t>
+        The goal of this document is to not limit the data that the device sends
+        or not serve as a replacemtn to YANG. But, to give additional freedom 
+        and allow the administrative domain or outside ad to send limited component 
+        identifiers that is just locally significant to a AD/flow and which are not
+        dependent on extra configuration or implementations.
+      </t>
+    </abstract>
+ 
+  </front>
+
+  <middle>
+    
+    <section>
+      <name>Introduction</name>
+      <t>
+        IP devices use the Internet Control Message Protocol ICMPv4
+        <xref target="RFC0792" /> and ICMPv6 <xref target="RFC4443" /> to
+        convey control information to source hosts. In particular, when an 
+        IP device receives a datagram that it cannot process, it may send 
+        an ICMP message to the datagram's originator or source. Network 
+        operators and higher-level protocols use these ICMP messages to 
+        detect and diagnose network issues.
+      </t>
+      <t>
+        Due to this reason, there have been a lot of efforts to extend these 
+        ICMP messages to append some very useful information which can be 
+        used for advanced debugging, identification of nodes or interfaces, 
+        etc. But there still is a need for more granular controls which can 
+        help in a deeper understanding of a flow. i.e. component identification.
+      </t>
+      <t>
+        Now, there already are ways whcih can help one get details about a 
+        component, YANG/NETCONF being one of them. But, what if a user wants to 
+        define their own list of components for a particular administrative 
+        domain or for a particular flow of communication?
+      </t>
+      <t>
+        This document serves that need by defining an ICMP extension 
+        object that appends component identifiers to ICMP messages. This object,
+        can also serve as an sux object which can be used along side other 
+        extension objects to correlate the data sent in those objects.
+        e.g. If a device wants to send the power consumption of lets say 4 fans
+        using the CTYPE=XX mentioned in <xref target="I-D.pignataro-green-enviro-icmp" />,
+        it also needs a way to correlate the values to corresponding fans.
+        One way is to use UUIDs from the YANG/NETCONF, but if there might not be a way to
+        use those, it can simply use the component identification object defined 
+        here and send it along the component power consumption subobject.
+      </t>
+      
+      <section>
+        <name>Requirements Language</name>
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+          "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT
+          RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+          interpreted as described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in
+          all capitals, as shown here.</t>
+      </section>
+      <!-- [CHECK] The 'Requirements Language' section is optional -->
+
+    </section>
+    
+    <section>
+      <name>Body [REPLACE]</name>
+      <t>Body text [REPLACE]</t>
+      
+      <ol>
+        <li>Ordered list item [REPLACE/DELETE]</li>
+      </ol>
+      
+      <ul>
+        <li>Bulleted list item [REPLACE/DELETE]</li>
+      </ul>
+      
+      <dl newline="true">
+        <!-- Omit newline="true" if you want each definition to start on the same line as the corresponding term -->
+        <dt>First term: [REPLACE/DELETE]</dt>
+        <dd>Definition of the first term [REPLACE/DELETE]</dd>
+        <dt>Second term: [REPLACE/DELETE]</dt>
+        <dd>Definition of the second term [REPLACE/DELETE]</dd>
+      </dl>
+      
+      <table>
+        <thead>
+        <!-- [REPLACE/DELETE] a table header is optional -->
+          <tr><th>Column 1 [REPLACE]</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cell [REPLACE]</td></tr>
+        </tbody>
+      </table>
+
+    </section>   
+    
+    <section anchor="IANA">
+    <!-- All drafts are required to have an IANA considerations section. See RFC 8126 for a guide.-->
+      <name>IANA Considerations</name>
+      <t>This memo includes no request to IANA. [CHECK]</t>
+    </section>
+    
+    <section anchor="Security">
+      <!-- All drafts are required to have a security considerations section. See RFC 3552 for a guide. -->
+      <name>Security Considerations</name>
+      <t>This document should not affect the security of the Internet. [CHECK]</t>
+    </section>
+    
+    <!-- NOTE: The Acknowledgements and Contributors sections are at the end of this template -->
+  </middle>
+
+  <back>
+    <references>
+      <name>References</name>
+      <references>
+        <name>Normative References</name>
+        
+        &RFC.0792;
+        &RFC.2119;
+        &RFC.4443;
+        &RFC.8174;
+        &I-D.ietf-intarea-extended-icmp-nodeid;
+        &I-D.pignataro-green-enviro-icmp;
+        <!-- The recommended and simplest way to include a well known reference -->
+        
+      </references>
+ 
+      <references>
+        <name>Informative References</name>    
+       
+      </references>
+    </references>
+    
+    <section>
+      <name>Appendix 1 [REPLACE/DELETE]</name>
+      <t>This becomes an Appendix [REPLACE]</t>
+    </section>
+
+    <section anchor="Acknowledgements" numbered="false">
+      <!-- [REPLACE/DELETE] an Acknowledgements section is optional -->
+      <name>Acknowledgements</name>
+      <t>This template uses extracts from templates written by Pekka Savola, Elwyn Davies and 
+        Henrik Levkowetz. [REPLACE]</t>
+    </section>
+    
+    <section anchor="Contributors" numbered="false">
+      <!-- [REPLACE/DELETE] a Contributors section is optional -->
+      <name>Contributors</name>
+      <t>Thanks to all of the contributors. [REPLACE]</t>
+      <!-- [CHECK] it is optional to add a <contact> record for some or all contributors -->
+    </section>
+    
+ </back>
+</rfc>

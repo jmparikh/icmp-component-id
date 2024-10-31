@@ -1,0 +1,280 @@
+
+
+
+
+Internet Engineering Task Force                           J. Parikh, Ed.
+Internet-Draft                                           Arista Networks
+Intended status: Experimental                            30 October 2024
+Expires: 3 May 2025
+
+
+              Extending ICMP for Component Identification
+              draft-parikh-intarea-extended-icmp-compid-00
+
+Abstract
+
+   [I-D.ietf-intarea-extended-icmp-nodeid] describes a mechanism for
+   Extending ICMP for Node Identification, which allows providing a
+   unique IP address and/or a textual name for the node, in the case
+   where each node may not have a unique IP address.
+
+   This document introduces a similar ICMP extension for Component
+   Identification.  It gives us an option to send locally defined
+   component details (like interfaces, fans, PSUs, etc.) or YANG/NETCONF
+   defined components in the ICMP message.  The true potential of this
+   extension object is when it is used along side other extension
+   objects which might want to send compontent based data (like in the
+   component based Sub-Objects defined in
+   [I-D.pignataro-green-enviro-icmp])
+
+   The goal of this document is to not limit the data that the device
+   sends or not serve as a replacemtn to YANG.  But, to give additional
+   freedom and allow the administrative domain or outside ad to send
+   limited component identifiers that is just locally significant to a
+   AD/flow and which are not dependent on extra configuration or
+   implementations.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 3 May 2025.
+
+
+
+Parikh                     Expires 3 May 2025                   [Page 1]
+
+Internet-Draft              Abbreviated Title               October 2024
+
+
+Copyright Notice
+
+   Copyright (c) 2024 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   3
+   2.  Body [REPLACE]  . . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   5.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+     5.1.  Normative References  . . . . . . . . . . . . . . . . . .   4
+     5.2.  Informative References  . . . . . . . . . . . . . . . . .   4
+   Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   5
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
+
+1.  Introduction
+
+   IP devices use the Internet Control Message Protocol ICMPv4 [RFC0792]
+   and ICMPv6 [RFC4443] to convey control information to source hosts.
+   In particular, when an IP device receives a datagram that it cannot
+   process, it may send an ICMP message to the datagram's originator or
+   source.  Network operators and higher-level protocols use these ICMP
+   messages to detect and diagnose network issues.
+
+   Due to this reason, there have been a lot of efforts to extend these
+   ICMP messages to append some very useful information which can be
+   used for advanced debugging, identification of nodes or interfaces,
+   etc.  But there still is a need for more granular controls which can
+   help in a deeper understanding of a flow. i.e. component
+   identification.
+
+
+
+
+
+
+
+Parikh                     Expires 3 May 2025                   [Page 2]
+
+Internet-Draft              Abbreviated Title               October 2024
+
+
+   Now, there already are ways whcih can help one get details about a
+   component, YANG/NETCONF being one of them.  But, what if a user wants
+   to define their own list of components for a particular
+   administrative domain or for a particular flow of communication?
+
+   This document serves that need by defining an ICMP extension object
+   that appends component identifiers to ICMP messages.  This object,
+   can also serve as an sux object which can be used along side other
+   extension objects to correlate the data sent in those objects.  e.g.
+   If a device wants to send the power consumption of lets say 4 fans
+   using the CTYPE=XX mentioned in [I-D.pignataro-green-enviro-icmp], it
+   also needs a way to correlate the values to corresponding fans.  One
+   way is to use UUIDs from the YANG/NETCONF, but if there might not be
+   a way to use those, it can simply use the component identification
+   object defined here and send it along the component power consumption
+   subobject.
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+2.  Body [REPLACE]
+
+   Body text [REPLACE]
+
+   1.  Ordered list item [REPLACE/DELETE]
+
+   *  Bulleted list item [REPLACE/DELETE]
+
+   First term: [REPLACE/DELETE]
+      Definition of the first term [REPLACE/DELETE]
+
+   Second term: [REPLACE/DELETE]
+      Definition of the second term [REPLACE/DELETE]
+
+                          +====================+
+                          | Column 1 [REPLACE] |
+                          +====================+
+                          | Cell [REPLACE]     |
+                          +--------------------+
+
+                                 Table 1
+
+
+
+
+
+Parikh                     Expires 3 May 2025                   [Page 3]
+
+Internet-Draft              Abbreviated Title               October 2024
+
+
+3.  IANA Considerations
+
+   This memo includes no request to IANA.  [CHECK]
+
+4.  Security Considerations
+
+   This document should not affect the security of the Internet.
+   [CHECK]
+
+5.  References
+
+5.1.  Normative References
+
+   [RFC0792]  Postel, J., "Internet Control Message Protocol", STD 5,
+              RFC 792, DOI 10.17487/RFC0792, September 1981,
+              <https://www.rfc-editor.org/info/rfc792>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC4443]  Conta, A., Deering, S., and M. Gupta, Ed., "Internet
+              Control Message Protocol (ICMPv6) for the Internet
+              Protocol Version 6 (IPv6) Specification", STD 89,
+              RFC 4443, DOI 10.17487/RFC4443, March 2006,
+              <https://www.rfc-editor.org/info/rfc4443>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [I-D.ietf-intarea-extended-icmp-nodeid]
+              Fenner, B. and R. Thomas, "Extending ICMP for Node
+              Identification", Work in Progress, Internet-Draft, draft-
+              ietf-intarea-extended-icmp-nodeid-00, 30 September 2024,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-intarea-
+              extended-icmp-nodeid-00>.
+
+   [I-D.pignataro-green-enviro-icmp]
+              Pignataro, C., Parikh, J., Bonica, R., and M. Welzl, "ICMP
+              Extensions for Environmental Information", Work in
+              Progress, Internet-Draft, draft-pignataro-green-enviro-
+              icmp-00, 18 October 2024,
+              <https://datatracker.ietf.org/doc/html/draft-pignataro-
+              green-enviro-icmp-00>.
+
+5.2.  Informative References
+
+
+
+Parikh                     Expires 3 May 2025                   [Page 4]
+
+Internet-Draft              Abbreviated Title               October 2024
+
+
+Appendix A.  Appendix 1 [REPLACE/DELETE]
+
+   This becomes an Appendix [REPLACE]
+
+Acknowledgements
+
+   This template uses extracts from templates written by Pekka Savola,
+   Elwyn Davies and Henrik Levkowetz.  [REPLACE]
+
+Contributors
+
+   Thanks to all of the contributors.  [REPLACE]
+
+Author's Address
+
+   Jainam Parikh (editor)
+   Arista Networks
+   5453 Great America Parkway
+   Santa Clara,  95035
+   United States of America
+   Email: jainam@parikhgroup.net
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Parikh                     Expires 3 May 2025                   [Page 5]
